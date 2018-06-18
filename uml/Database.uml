@@ -1,0 +1,99 @@
+@startuml
+
+'BlockData contains raw data sent from each place every 30 sec for blockchainization
+'Conditions table are for data form temp and hum sensors
+'Cake table is to track cakes movements
+
+hide class circle
+hide class methods
+
+class Place {
+  PK PlaceID
+  --
+  String PlaceName
+  String PlaceType
+  String PlaceAddress
+}
+
+class Sensor {
+  PK SensorID
+  --
+  FK Place
+  --
+  String SensorName
+  String SensorType
+  String DataFields
+}
+
+Place --* Sensor
+
+class RFIDScanner {
+  String RS485Addr
+  String IPAddr
+}
+
+class HTC100 {
+  String ModBusAddr
+}
+
+class DS18B20 {
+  String Gateway
+}
+
+RFIDScanner --|> Sensor
+HTC100 --|> Sensor
+DS18B20 --|> Sensor
+
+class Condition {
+  PK MeasurementID
+  --
+  FK SensorID
+  FK BlockID
+  FK Place
+  --
+  DataTime TimeStamp
+  Float Temperature
+  Float Humidity
+}
+
+class ConditionsSensor {
+}
+
+DS18B20 --* ConditionsSensor
+HTC100 --* ConditionsSensor
+ConditionsSensor --* Condition
+
+class CakeAllocation {
+  PK CakeAllocationID
+  --
+  FK CakeID
+  FK PlaceID
+  --
+  DateTime Arrival
+  DateTime Leave
+}
+
+class Cake {
+  PK CakeID
+  --
+  FK Allocations[] CakeAllocationID
+  --
+  String TagID
+  String Type
+}
+
+CakeAllocation "1..n" --* Cake
+
+
+'Blockchainization data
+class BlockData {
+  PK BlockID
+  --
+  String Place
+  DataTime TimeStamp
+  Float Temperature
+  Float Humidity
+  TagID[] TagsList
+}
+
+@enduml

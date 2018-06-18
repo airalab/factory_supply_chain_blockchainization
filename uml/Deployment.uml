@@ -1,0 +1,93 @@
+@startuml
+
+left to right direction
+
+frame "Supply Chain Monitoring" as SupplyChainMonitoring {
+
+  folder "Factory" as Factory {
+    frame "Factory Server" as FactoryServer {
+      node "Sensors ROS API Wrapper" as FactorySensorsNode {
+        package Parameters [
+          "sensros_rate"
+        ]
+        package Publishers [
+          "/factory/storage/temperature std_msgs/float32"
+          "/factory/storage/humidity std_msgs/float32"
+          "/factory/storage/tags std_msgs/string[]"
+        ]
+      }
+    }
+    folder "Factory Storage" as FactoryStorage {
+      agent "HTC100" as FactoryStoragePVT100
+      agent "RFID Scanner" as FactoryStorageRFIDScanner
+      FactoryStoragePVT100 -> FactoryServer : RS485
+      FactoryStorageRFIDScanner -> FactoryServer : Ethernet
+    }
+    folder "Factory Loading Zone" as FactoryLoadingZone {
+      agent "HTC100" as FactoryLoadingZonePVT100
+      agent "RFID Scanner" as FactoryLoadingZoneRFIDScanner 
+      FactoryLoadingZonePVT100 -> FactoryServer : RS485
+      FactoryLoadingZoneRFIDScanner -> FactoryServer : Ethernet
+    }
+  }
+
+  folder "Vehicle" as Vehicle {
+    frame "Vehicle Waspmote Industrial" as VehicleWaspmoteIndustrial {
+    }
+    agent "HTC100" as VehiclePVT100
+    agent "RFID Scanner" as VehicleRFIDScanner 
+    VehiclePVT100 -> VehicleWaspmoteIndustrial : ModBus over RS485
+    VehicleRFIDScanner -left-> VehicleWaspmoteIndustrial : RS485
+  }
+
+  folder "Store" as Store {
+    frame "Store Server" as StoreServer {
+      node "Sensors ROS API Wrapper" as StoreSensorsNode
+    }
+    folder "Store Storage" as StoreStorage {
+      agent "HTC100" as StoreStorageZonePVT100
+      agent "RFID Scanner" as StoreStorageZoneRFIDScanner 
+      StoreStorageZonePVT100 -> StoreServer
+      StoreStorageZoneRFIDScanner -> StoreServer
+    }
+    folder "Store Showcase" as StoreShowcase {
+      agent "HTC100" as StoreShowcaseZonePVT100
+      agent "RFID Scanner" as StoreShowcaseZoneRFIDScanner 
+      StoreShowcaseZonePVT100 --> StoreServer
+      StoreShowcaseZoneRFIDScanner -> StoreServer
+    }
+  }
+
+  frame "Airalab Server" as AiralabServer {
+    storage UserDApp
+    storage ServiceWebUI
+    database DB [
+      <b>DB</b>
+      ==
+      Cakes
+      ---
+      Conditions
+      ---
+      BlockData
+    ]
+    node BlockchainizationAgent
+    node AIRA
+    
+    node "Waspmote Gateway" as WaspmoteGateway
+  }
+
+  FactorySensorsNode -down-> AiralabServer : ROS API over VPN
+  VehicleWaspmoteIndustrial -right-> WaspmoteGateway : TCP Socket over 4G
+  StoreSensorsNode -> AiralabServer : ROS API over VPN
+
+  ' Layout
+  Factory -[hidden]- AiralabServer
+  Vehicle -[hidden]- AiralabServer
+  Store -[hidden]- AiralabServer
+  FactoryStorage -[hidden]- FactoryServer
+  FactoryLoadingZone -[hidden]- FactoryServer
+  StoreStorage -[hidden]- StoreServer
+  StoreShowcase -[hidden]- StoreServer
+}
+
+@enduml
