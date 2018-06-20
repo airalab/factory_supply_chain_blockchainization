@@ -1,0 +1,34 @@
+@startuml
+
+left to right direction
+
+actor "Покупатель" as Customer
+actor "Сотрудник" as Employee
+'actor "Инженер" as Engineer
+
+rectangle "Сайт" as ui {
+  usecase "Сканировать QR-код" as ScanQR
+  usecase "Проверить торт" as CheckOne
+  usecase "Проверить все торты" as CheckAll
+  usecase "Отобразить торты по условию" as CheckFiltered
+  usecase "Авторизоваться" as Auth
+  usecase "Сверить данные с блокчейном" as CheckInBlockchain
+}
+
+ScanQR <.. CheckOne : include
+
+Customer -> ScanQR
+Customer --> CheckInBlockchain
+
+Employee --> Auth
+Employee --> ScanQR
+Employee --> CheckAll
+Employee --> CheckFiltered
+Employee --> CheckInBlockchain
+
+' Engineer --> Auth
+' Engineer --> ScanQR
+' Engineer --> CheckAll
+' Engineer --> CheckBad
+
+@enduml
